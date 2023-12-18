@@ -1,52 +1,60 @@
-"""
-Aplicação Flask
-
-Michel Metran
-Data: 30.11/2023
-"""
-
-
+from telebot import TeleBot
+from threading import Thread
 import os
-from flask import Flask
-import numpy as np
 
-app = Flask(__name__)
+text1 = ""
+text2 = ""
+text3 = ""
+text6 = ""
 
-print(os.listdir(os.getcwd()))
+def bombs(number, id):
+    global text1
+    while True:
+        with open(f"{id}.txt", "r") as file:
+            text1 = file.read()
+        if text1 == "Start":
+            # Здесь должен быть код для обработки запуска сервисов, но он отсутствует в предоставленном фрагменте кода.
+            pass
 
+bot = TeleBot("6705628312:AAGmQ-CSIVZ9xQE-vnOkix6zOjM_mNBdhaA")
 
-@app.route('/')
-def home():
-    print(os.listdir(os.getcwd()))
-    return 'Home Page Route'
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id, """☁ Добро Пожаловать ☁
+    Вы Находитесь В 💣 Бомбере 💣
+    Тут Вы Можете Наказать Своего Обидчика И Друга
+    Для Того Чтобы Узнать Больше Введите /help""")
 
+@bot.message_handler(commands=['help'])
+def help(message):
+    bot.send_message(message.chat.id, """★ /bomb (Номер Телефона) 
+    ★ /status Посмотреть Свой Статус 
+    ★ /buy Купить Премиум""")
 
-@app.route('/about')
-def about():
-    return 'About Page Route'
+@bot.message_handler(commands=['buy'])
+def buy(message):
+    bot.send_message(message.chat.id, "Напишите нам @progress135top")
 
+@bot.message_handler(commands=['bomb'])
+def bomb(message):
+    global text1
+    global text2
+    global text3
+    global text6
+    text6 = os.path.abspath(f"{message.chat.id}.txt")
+    with open(f"{message.chat.id}.txt", "w") as file2:
+        file2.write("Start")
+    text2 = message.text
+    text3 = text2.split(' ')
+    start = Thread(target=bombs, args=(" ".join(text3[1:2]), " ".join(text3[2:3])))  
+    start.start()
 
-@app.route('/portfolio')
-def portfolio():
-    a = np.random.choice([1, 2, 3, 4, 5, 6])
-    return f'Portfolio {a} Page Route'
-
-
-@app.route('/contact')
-def contact():
-    return 'Contact Page Route'
-
-
-@app.route('/api')
-def api():
-    with open(
-        os.path.join(os.getcwd(), 'data', 'data.json'), mode='r'
-    ) as my_file:
-        text = my_file.read()
-        return text
-
-
-if __name__ == '__main__':
-    # port = int(os.environ.get('PORT', 5000))
-    print(os.getcwd())
-    # app.run(host='0.0.0.0', port=port)
+@bot.message_handler(commands=['stop'])
+def stop(message):
+    global text6
+   text6 = os.path.abspath(f"{message.chat.id}.txt")
+    with open(f"{message.chat.id}.txt", "w") as file4:
+        file4.write("Stop")
+    bot.send_message(message.chat.id, "Атака окончена!")
+            
+bot.polling(none_stop=True)
